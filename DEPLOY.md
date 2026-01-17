@@ -22,7 +22,7 @@ services:
       - DISABLE_REGISTRATION=false
       - RUN_MIGRATIONS=false
     volumes:
-      - data:/root/data
+      - data:/data
     ports:
       - "80:80"     # Frontend
       - "3000:3000" # Backend
