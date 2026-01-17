@@ -41,7 +41,7 @@ func main() {
 	if enableWorkers == "" {
 		enableWorkers = "true" // Default to enabled
 	}
-	
+
 	if enableWorkers == "true" {
 		log.Println("Starting background workers...")
 		// Run auto-keep once at startup and start background worker to repeatedly
@@ -80,7 +80,7 @@ func main() {
 
 	// Middleware
 	app.Use(logger.New())
-	
+
 	// CORS configuration: restrict to specific origins for security
 	allowedOriginsRaw := os.Getenv("ALLOWED_ORIGINS")
 	allowedOrigins := strings.TrimSpace(allowedOriginsRaw)
