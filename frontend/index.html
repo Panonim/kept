@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kept - Promise Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <link rel="icon" href="/Static/logos/Kept Mascot Circle.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+  <div id="app">
+    <!-- Auth screen -->
+    <div id="auth-screen" class="screen">
+      <div class="auth-container">
+        <div class="auth-header">
+          <img src="/Static/logos/Kept Mascot Colored.svg" alt="Kept" class="auth-logo">
+          <h1>Kept</h1>
+          <p>Track what matters</p>
+        </div>
+        
+        <div class="auth-forms">
+          <div id="login-form" class="auth-form active">
+            <h2>Welcome back</h2>
+            <form id="login-form-element">
+              <input type="text" id="login-username" placeholder="Username" required>
+              <input type="password" id="login-password" placeholder="Password" required>
+              <button type="submit" class="btn-primary">Sign in</button>
+            </form>
+            <p class="auth-switch">New here? <a href="#" id="show-register">Create an account</a></p>
+          </div>
+
+          <div id="register-form" class="auth-form">
+            <h2>Create account</h2>
+            <form id="register-form-element">
+              <input type="text" id="register-username" placeholder="Username" required>
+              <input type="password" id="register-password" placeholder="Password" required>
+              <button type="submit" class="btn-primary">Create account</button>
+            </form>
+            <p class="auth-switch">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+          </div>
+        </div>
+
+        <div id="auth-error" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Main app screen -->
+    <div id="main-screen" class="screen hidden">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="header-logo">
+            <img src="/Static/logos/Kept Mascot Colored.svg" alt="Kept" class="logo-icon">
+            <span>Kept</span>
+          </div>
+          <div class="header-actions">
+            <button id="theme-toggle" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">
+              <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+              </svg>
+              <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+              </svg>
+            </button>
+            <a href="https://github.com/Panonim/kept" target="_blank" rel="noopener noreferrer" class="btn-icon" title="View on GitHub" aria-label="View on GitHub">
+              <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="size-6">
+                <title>GitHub</title>
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+            <button id="notification-bell" class="btn-icon" title="Enable notifications" aria-label="Enable notifications">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" aria-label="none">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+              </svg>
+            </button>
+            <button id="logout-btn" class="btn-icon" title="Sign out" aria-label="Sign out">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <div class="main-container">
+          <!-- Timeline view -->
+          <div id="timeline-view" class="view active">
+            <div class="view-header">
+              <div id="stats-graph" class="stats-graph">
+                <!-- Stats graph will be rendered here -->
+              </div>
+              <h1>Your promises</h1>
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="kept">Kept</button>
+                <button class="filter-tab" data-filter="active">Active</button>
+                <button class="filter-tab" data-filter="broken">Broken</button>
+              </div>
+            </div>
+            
+            <div id="timeline-content" class="timeline-content">
+              <!-- Promises will be rendered here -->
+            </div>
+          </div>
+
+          <!-- Promise detail view -->
+          <div id="detail-view" class="view">
+            <button id="back-to-timeline" class="btn-back">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+              </svg>
+              Back
+            </button>
+            <div id="detail-content"></div>
+          </div>
+        </div>
+
+        <!-- Floating action button -->
+        <button id="create-promise-btn" class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
+      </main>
+    </div>
+
+    <!-- Create/Edit Promise Modal -->
+    <div id="promise-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Make a promise</h2>
+          <button class="modal-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="promise-form">
+          <div class="form-group">
+            <label for="promise-recipient">To</label>
+            <input type="text" id="promise-recipient" placeholder="Who is this promise to?" required>
+          </div>
+          <div class="form-group">
+            <label for="promise-description">Promise</label>
+            <textarea id="promise-description" placeholder="What did you promise?" rows="3" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="promise-due-date">Due date (optional)</label>
+            <input type="datetime-local" id="promise-due-date">
+          </div>
+          <div class="form-group custom-select-container">
+            <label>Remind me</label>
+            <div class="custom-select" id="frequency-select">
+              <div class="custom-select-trigger">
+                <span class="custom-select-value">Never</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </div>
+              <div class="custom-select-options">
+                <div class="custom-option selected" data-value="">Never</div>
+                <div class="custom-option" data-value="daily">Daily</div>
+                <div class="custom-option" data-value="weekly">Weekly</div>
+                <div class="custom-option" data-value="monthly">Monthly</div>
+              </div>
+            </div>
+            <input type="hidden" id="promise-reminder-frequency" value="">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn-primary">Save promise</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Resolve Promise Modal -->
+    <div id="resolve-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Resolve promise</h2>
+          <button class="modal-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="resolve-form">
+          <div class="form-group">
+            <label>How did it go?</label>
+            <div class="state-buttons">
+              <button type="button" class="state-btn" data-state="kept">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Kept
+              </button>
+              <button type="button" class="state-btn" data-state="broken">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+                Broken
+              </button>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="reflection-note">Reflection (optional)</label>
+            <textarea id="reflection-note" placeholder="What happened?" rows="3"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
