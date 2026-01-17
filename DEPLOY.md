@@ -3,7 +3,7 @@
 ### Pull example .env file
 
 ```sh
-wget https://codeberg.org/panonim/kept/raw/branch/main/.env.example -o .env
+wget https://raw.githubusercontent.com/Panonim/kept/refs/heads/beta/.env.example -o .env
 ```
 
 ## Deploying with Docker Compose
@@ -11,7 +11,7 @@ wget https://codeberg.org/panonim/kept/raw/branch/main/.env.example -o .env
 ```yaml
 services:
   kept:
-    image: codeberg.org/panonim/kept:latest
+    image: ghcr.io/panonim/kept:latest
     container_name: kept
     environment:
       - PORT=3000
@@ -24,8 +24,8 @@ services:
     volumes:
       - data:/root/data
     ports:
-      - "80:80"    # Frontend (nginx)
-      - "3000:3000" # Backend API
+      - "80:80"     # Frontend
+      - "3000:3000" # Backend
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]

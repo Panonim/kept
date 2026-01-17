@@ -50,7 +50,8 @@ COPY --from=frontend-builder /src/frontend/dist /usr/share/nginx/html
 COPY --from=backend-builder /usr/local/bin/main /usr/local/bin/main
 
 # Add nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/http.d/default.conf
+COPY nginx.conf /etc/nginx/http.d/default.conf
 RUN mkdir -p /root/data /var/run/nginx
 
 EXPOSE 80 3000
