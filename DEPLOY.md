@@ -20,7 +20,7 @@ services:
       - JWT_REFRESH_SECRET=your_refresh_secret
       - ALLOWED_ORIGINS=https://yourdomain.com
       - DISABLE_REGISTRATION=false
-      - RUN_MIGRATIONS=true
+      - RUN_MIGRATIONS=false
     volumes:
       - data:/root/data
     ports:
