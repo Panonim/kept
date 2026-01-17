@@ -1,0 +1,20 @@
+{
+  "name": "kept-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0",
+    "jsdom": "^23.0.0"
+  },
+  "dependencies": {
+    "heroicons": "^2.1.1",
+    "chart.js": "^4.3.0"
+  }
+}

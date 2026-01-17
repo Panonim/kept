@@ -1,0 +1,16 @@
+{
+  "name": "Kept",
+  "short_name": "Kept",
+  "description": "Track your promises with care",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9FDFB",
+  "theme_color": "#A2FFA2",
+  "icons": [
+    {
+      "src": "/Static/logos/Kept Mascot Colored.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
