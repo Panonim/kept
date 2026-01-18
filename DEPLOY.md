@@ -3,7 +3,7 @@
 ### Pull example .env file
 
 ```sh
-wget https://raw.githubusercontent.com/Panonim/kept/refs/heads/beta/.env.example -o .env
+wget https://raw.githubusercontent.com/Panonim/kept/refs/heads/main/.env.example -o .env
 ```
 
 ## Deploying with Docker Compose
@@ -20,9 +20,9 @@ services:
       - JWT_REFRESH_SECRET=your_refresh_secret
       - ALLOWED_ORIGINS=https://yourdomain.com
       - DISABLE_REGISTRATION=false
-      - RUN_MIGRATIONS=true
+      - RUN_MIGRATIONS=false
     volumes:
-      - data:/root/data
+      - data:/data
     ports:
       - "80:80"     # Frontend
       - "3000:3000" # Backend
