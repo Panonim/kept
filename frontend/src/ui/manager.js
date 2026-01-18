@@ -109,7 +109,6 @@ export class UIManager {
 
     // Notification bell
     document.getElementById('notification-bell')?.addEventListener('click', () => {
-      console.log('Bell clicked!');
       this.handleNotificationPermission();
     });
 
@@ -200,38 +199,46 @@ export class UIManager {
     }
   }
 
+  showNotification(message, type = 'info', duration = 3000) {
+    const notifEl = document.getElementById('notification-message');
+    if (notifEl) {
+      notifEl.textContent = message;
+      notifEl.className = `notification-message show ${type}`;
+      
+      // Auto-hide after duration
+      setTimeout(() => {
+        notifEl.classList.remove('show');
+      }, duration);
+    }
+  }
+
   async handleNotificationPermission() {
-    console.log('handleNotificationPermission called');
-    console.log('this.notifications:', this.notifications);
-    console.log('Notification.permission:', Notification.permission);
-    
     if (!this.notifications) {
       console.error('Notification service not available');
+      this.showNotification('Notifications Error: Service not available', 'error', 4000);
       return;
     }
 
     try {
       // If permission already granted, send a test push-style notification immediately
       if (Notification.permission === 'granted') {
-        console.log('Permission already granted, sending test notification...');
         await this.notifications.sendTestNotification();
-        console.log('Test notification sent');
+        this.showNotification('✓ Notifications Enabled', 'success', 3000);
         return;
       }
 
-      console.log('Requesting permission...');
       const permission = await this.notifications.requestPermission();
-      console.log('Permission result:', permission);
       
       if (permission === 'granted') {
-        console.log('Notification permission granted');
         // After granting, send a test notification about a promise
         await this.notifications.sendTestNotification();
+        this.showNotification('✓ Notifications Enabled', 'success', 3000);
       } else if (permission === 'denied') {
-        console.log('Notification permission denied');
+        this.showNotification('Notifications Error: Permission Denied', 'error', 4000);
       }
     } catch (error) {
       console.error('Error in handleNotificationPermission:', error);
+      this.showNotification(`Notifications Error: ${error.message}`, 'error', 4000);
     }
   }
 
@@ -642,7 +649,7 @@ export class UIManager {
           <div class="promise-detail-section">
             <h3>History</h3>
             <div class="event-timeline">
-              ${promise.events.map(event => this.renderEvent(event)).join('')}
+              ${promise.events.slice().reverse().map(event => this.renderEvent(event)).join('')}
             </div>
           </div>
         ` : ''}
@@ -1123,8 +1130,9 @@ export class UIManager {
 
   formatDate(date) {
     const now = new Date();
-    const diffMs = date - now;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thatDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((thatDay - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return 'today';
     if (diffDays === 1) return 'tomorrow';
@@ -1142,13 +1150,18 @@ export class UIManager {
   formatDateTime(date) {
     const now = new Date();
     const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    // For days, use calendar day difference to be consistent with formatDate
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thatDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((today - thatDay) / (1000 * 60 * 60 * 24));
 
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffHours < 24 && diffDays === 0) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
 
     return date.toLocaleDateString('en-US', {

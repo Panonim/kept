@@ -20,12 +20,12 @@ describe('UIManager logout', () => {
     document.body.innerHTML = `
       <div id="auth-screen">
         <form id="login-form-element">
-          <input id="login-username" value="foo" />
-          <input id="login-password" value="secret" />
+          <input id="login-username" />
+          <input id="login-password" />
         </form>
         <form id="register-form-element">
-          <input id="register-username" value="bar" />
-          <input id="register-password" value="secret2" />
+          <input id="register-username" />
+          <input id="register-password" />
         </form>
       </div>
       <div id="main-screen"></div>
@@ -36,6 +36,12 @@ describe('UIManager logout', () => {
     const auth = new DummyAuth();
     const promises = new DummyPromises();
     const manager = new UIManager(auth, promises);
+
+    // Set some values as if user typed them
+    document.getElementById('login-username').value = 'foo';
+    document.getElementById('login-password').value = 'secret';
+    document.getElementById('register-username').value = 'bar';
+    document.getElementById('register-password').value = 'secret2';
 
     manager.handleLogout();
 

@@ -344,6 +344,51 @@ body {
   display: block;
 }
 
+.notification-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--color-broken);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  display: none;
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+  animation: slideDown 0.3s ease-out;
+  max-width: 90vw;
+}
+
+.notification-message.show {
+  display: block;
+}
+
+.notification-message.success {
+  background-color: var(--color-kept);
+}
+
+.notification-message.error {
+  background-color: var(--color-broken);
+}
+
+.notification-message.info {
+  background-color: var(--color-info, #3b82f6);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 /* Main App */
 .app-header {
   background-color: var(--color-surface);
@@ -714,9 +759,10 @@ body {
 
 /* Make history scrollable without affecting page scroll. Limit height so actions remain visible. */
 .event-timeline {
-  max-height: calc(60vh - 160px);
+  max-height: calc(60vh - 220px);
   overflow: auto;
   padding-right: 8px; /* allow space for scrollbar */
+  padding-bottom: calc(var(--space-xl) + env(safe-area-inset-bottom));
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
@@ -790,7 +836,7 @@ body {
   padding: var(--space-md) 0;
   margin-left: 0;
   margin-right: 0;
-  margin-bottom: calc(-1 * var(--space-xl));
+  margin-bottom: 0;
   padding-left: var(--space-xl);
   padding-right: var(--space-xl);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);

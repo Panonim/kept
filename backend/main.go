@@ -59,6 +59,9 @@ func main() {
 				if err := api.ProcessRecurringReminders(db); err != nil {
 					log.Printf("Recurring reminder worker error: %v", err)
 				}
+				if err := api.ProcessScheduledReminders(db); err != nil {
+					log.Printf("Scheduled reminder worker error: %v", err)
+				}
 			}
 		}()
 	} else {

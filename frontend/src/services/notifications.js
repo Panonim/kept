@@ -4,18 +4,62 @@ export class NotificationService {
   // Accept optional authService to access token and authenticatedFetch
   constructor(authService) {
     this.authService = authService;
+    this.vapidPublicKey = null;
     this.init();
   }
 
   async init() {
     if (!('Notification' in window)) {
-      console.log('This browser does not support notifications');
+      console.error('Notifications not supported in this browser');
       return;
     }
 
     if (!('serviceWorker' in navigator)) {
-      console.log('Service Workers are not supported');
+      console.error('Service Workers are not supported in this browser');
       return;
+    }
+
+    // Register Service Worker first
+    try {
+      await this.registerServiceWorker();
+    } catch (error) {
+      console.warn('Failed to register Service Worker:', error);
+    }
+
+    // Fetch VAPID public key from server
+    try {
+      await this.fetchVapidPublicKey();
+    } catch (error) {
+      console.error('Error fetching VAPID key');
+    }
+  }
+
+  async registerServiceWorker() {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+      });
+      // Wait for it to be ready
+      await navigator.serviceWorker.ready;
+      return registration;
+    } catch (error) {
+      console.error('Failed to register Service Worker');
+      throw error;
+    }
+  }
+
+  async fetchVapidPublicKey() {
+    try {
+      const response = await fetch(`${API_URL}/push/vapid-public-key`);
+      if (!response.ok) {
+        throw new Error('VAPID key not available');
+      }
+      const data = await response.json();
+      this.vapidPublicKey = data.publicKey;
+      return this.vapidPublicKey;
+    } catch (error) {
+      console.error('Push notifications not configured on server');
+      return null;
     }
   }
 
@@ -41,24 +85,32 @@ export class NotificationService {
   async subscribeToPush() {
     try {
       const registration = await navigator.serviceWorker.ready;
-      
-      // Check if already subscribed
-      let subscription = await registration.pushManager.getSubscription();
-      
-      if (!subscription) {
-        // Create new subscription
-        const publicKey = await this.getVapidPublicKey();
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: this.urlBase64ToUint8Array(publicKey),
-        });
+      // Always unsubscribe from any existing subscription to avoid mismatches
+      let oldSubscription = await registration.pushManager.getSubscription();
+      if (oldSubscription) {
+        await oldSubscription.unsubscribe();
       }
-
+      // Ensure we have the VAPID key
+      if (!this.vapidPublicKey) {
+        await this.fetchVapidPublicKey();
+      }
+      if (!this.vapidPublicKey) {
+        console.error('Cannot subscribe: VAPID public key not available');
+        return null;
+      }
+      // Create new subscription
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey),
+        });
       // Send subscription to server. Prefer authService.authenticatedFetch when available
+      const p256dh = this.arrayBufferToUrlBase64(subscription.getKey('p256dh'));
+      const auth = this.arrayBufferToUrlBase64(subscription.getKey('auth'));
+      
       const body = JSON.stringify({
         endpoint: subscription.endpoint,
-        p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')))),
-        auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')))),
+        p256dh,
+        auth,
       });
 
       if (this.authService && this.authService.authenticatedFetch) {
@@ -80,15 +132,28 @@ export class NotificationService {
           });
         }
       }
+      
+      console.log('Subscribed to push notifications');
+      return subscription;
     } catch (error) {
-      console.error('Failed to subscribe to push:', error);
+      console.error('Failed to subscribe to push');
+      return null;
     }
   }
 
   async getVapidPublicKey() {
-    // In production, this should be fetched from the server
-    // For now, return a placeholder (you'll need to generate real VAPID keys)
-    return 'BEl62iUYgUivxIkv69yViEuiBIa-Ib37J8-fZHX_5CzNqpmqvxT5O5y7L6rPKZp_gQZAYy6Y4g7a3YN8-8X-Y=';
+    if (this.vapidPublicKey) {
+      return this.vapidPublicKey;
+    }
+    return await this.fetchVapidPublicKey();
+  }
+
+  arrayBufferToUrlBase64(buffer) {
+    const binary = String.fromCharCode(...new Uint8Array(buffer));
+    return window.btoa(binary)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   }
 
   urlBase64ToUint8Array(base64String) {
@@ -106,10 +171,23 @@ export class NotificationService {
     return outputArray;
   }
 
-  // Request the server to generate a test push payload and display it via the service worker
+  // Request the server to send a test push notification
+  // The server will send an actual push notification to this device
   async sendTestNotification() {
     try {
-      console.debug('sendTestNotification');
+      // First ensure we're subscribed to push
+      const subscription = await this.subscribeToPush();
+      if (!subscription) {
+        // Fall back to local notification if push subscription failed
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification('Kept — Test', {
+          body: 'Push subscription not available. Please check your notification settings.',
+          icon: '/Static/logos/Kept Mascot Colored.svg',
+          badge: '/Static/logos/Kept Mascot Colored.svg',
+          tag: 'kept-test-local',
+        });
+        return;
+      }
 
       let res;
       if (this.authService && this.authService.authenticatedFetch) {
@@ -128,24 +206,45 @@ export class NotificationService {
       }
 
       if (!res.ok) {
-        throw new Error('Failed to request test notification');
+        const errorData = await res.json().catch(() => ({}));
+        // If 500, might be VAPID mismatch - retry by unsubscribing and re-subscribing
+        if (res.status === 500 && errorData.error && errorData.error.includes('push notifications')) {
+          console.error('Push failed; clearing subscription to retry');
+          const registration = await navigator.serviceWorker.ready;
+          const existingSub = await registration.pushManager.getSubscription();
+          if (existingSub) {
+            await existingSub.unsubscribe();
+          }
+        }
+        throw new Error(errorData.error || 'Failed to send test notification');
       }
 
-      const payload = await res.json();
-      const registration = await navigator.serviceWorker.ready;
+      // Server sends the push notification directly
+      const result = await res.json();
 
-      const title = payload.title || 'Kept — Test Reminder';
-      const options = {
-        body: payload.body || 'This is a test reminder about one of your promises.',
-        tag: 'kept-test',
+      // Also show a local notification to indicate success
+      // (the server-sent notification will arrive asynchronously via Service Worker)
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification('Kept — Test', {
+        body: 'This is a test notification',
         icon: '/Static/logos/Kept Mascot Colored.svg',
         badge: '/Static/logos/Kept Mascot Colored.svg',
-        data: payload.data || {},
-      };
-
-      await registration.showNotification(title, options);
+        tag: 'kept-test-local',
+      });
     } catch (error) {
-      console.error('sendTestNotification failed:', error);
+      console.error('Failed to send test notification');
+      // Show error as local notification
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification('Kept — Notification Error', {
+          body: error.message || 'Failed to send test notification',
+          icon: '/Static/logos/Kept Mascot Colored.svg',
+          badge: '/Static/logos/Kept Mascot Colored.svg',
+          tag: 'kept-test-error',
+        });
+      } catch (e) {
+        console.error('Failed to show error notification');
+      }
       throw error;
     }
   }
