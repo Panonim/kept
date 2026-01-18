@@ -43,6 +43,27 @@ volumes:
 
 ---
 
+## Generating VAPID keys
+
+For web-push notifications (required for background/persisted push), generate VAPID keys and set them as environment variables.
+
+- Generate keys locally (Node.js required):
+
+```sh
+npx web-push generate-vapid-keys --json
+```
+
+Copy the resulting `publicKey` and `privateKey` into your environment.
+
+- Example environment variables (Docker Compose `environment` block or systemd exports):
+
+```
+VAPID_PUBLIC_KEY=your-vapid-public-key-here
+VAPID_PRIVATE_KEY=your-vapid-private-key-here
+VAPID_SUBJECT=mailto:admin@yourdomain.com
+```
+
+- For Docker users: add these to the `kept` service `environment` in `docker-compose.yml`, or provide via Docker secrets for improved security.
 
 ## Bare Metal Deployment (No Docker)
 
