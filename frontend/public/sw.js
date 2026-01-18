@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kept-v3';
+const CACHE_NAME = 'kept-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -45,19 +45,36 @@ self.addEventListener('activate', (event) => {
 
 // Push notification handler
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Kept Reminder';
-  const options = {
-    body: data.body || 'You have a promise to keep',
-    icon: '/Static/logos/Kept Mascot Colored.svg',
-    badge: '/Static/logos/Kept Mascot Colored.svg',
-    tag: 'promise-reminder',
-    requireInteraction: false,
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
+  console.log('Push received');
+  try {
+    if (!event.data) {
+      console.error('Push event has no data');
+      return;
+    }
+    let data = {};
+    try {
+      data = event.data.json();
+    } catch (e) {
+      console.error('Failed to parse push data');
+      return;
+    }
+    const title = data.title || 'Kept Reminder';
+    const options = {
+      body: data.body || 'You have a promise to keep',
+      icon: data.icon || '/Static/logos/Kept%20Mascot%20Colored.svg',
+      badge: data.badge || '/Static/logos/Kept%20Mascot%20Colored.svg',
+      tag: data.tag || 'promise-reminder',
+      requireInteraction: false,
+      data: data.data || {},
+    };
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+        .then(() => console.log('Notification shown'))
+        .catch(err => console.error('Failed to show notification'))
+    );
+  } catch (error) {
+    console.error('Error in push event handler');
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {

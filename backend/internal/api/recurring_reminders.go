@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"kept/internal/models"
 	"log"
 	"time"
@@ -32,9 +33,61 @@ func ProcessRecurringReminders(db *sql.DB) error {
 		}
 
 		if shouldRemind(p) {
-			if err := sendReminder(db, p); err != nil {
+			if err := sendRecurringReminder(db, p); err != nil {
 				log.Printf("Failed to send reminder for promise %d: %v", p.ID, err)
 			}
+		}
+	}
+	return nil
+}
+
+// ProcessScheduledReminders checks for one-time reminders that are due
+// and sends push notifications for them.
+func ProcessScheduledReminders(db *sql.DB) error {
+	query := `
+		SELECT r.id, r.promise_id, r.user_id, r.remind_at, p.recipient, p.description
+		FROM reminders r
+		JOIN promises p ON r.promise_id = p.id
+		WHERE r.is_sent = FALSE AND r.remind_at <= CURRENT_TIMESTAMP
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var reminderID, promiseID, userID int
+		var remindAt time.Time
+		var recipient, description string
+
+		err := rows.Scan(&reminderID, &promiseID, &userID, &remindAt, &recipient, &description)
+		if err != nil {
+			log.Printf("Error scanning reminder: %v", err)
+			continue
+		}
+
+		payload := PushPayload{
+			Title: fmt.Sprintf("Reminder about your promise to: %s", recipient),
+			Body:  description,
+			Icon:  "/Static/logos/Kept Mascot Colored.svg",
+			Badge: "/Static/logos/Kept Mascot Colored.svg",
+			Tag:   fmt.Sprintf("kept-reminder-%d", reminderID),
+			Data:  map[string]interface{}{"promise_id": promiseID, "reminder_id": reminderID},
+		}
+
+		if err := SendPushToUser(db, userID, payload); err != nil {
+			log.Printf("Failed to send scheduled reminder %d: %v", reminderID, err)
+			continue
+		}
+
+		// Mark reminder as sent
+		_, err = db.Exec("UPDATE reminders SET is_sent = TRUE WHERE id = ?", reminderID)
+		if err != nil {
+			log.Printf("Failed to mark reminder %d as sent: %v", reminderID, err)
+		} else {
+			log.Printf("Sent scheduled reminder %d for promise %d to user %d", reminderID, promiseID, userID)
 		}
 	}
 	return nil
@@ -45,9 +98,6 @@ func shouldRemind(p models.Promise) bool {
 	if p.LastRemindedAt != nil {
 		lastReminded = *p.LastRemindedAt
 	}
-
-    // Don't remind if last reminder was very recent (to avoid duplicate runs within seconds)
-    // But since we update last_reminded_at immediately, this should be fine.
 
 	var duration time.Duration
 	switch p.ReminderFrequency {
@@ -64,14 +114,26 @@ func shouldRemind(p models.Promise) bool {
 	return time.Since(lastReminded) >= duration
 }
 
-func sendReminder(db *sql.DB, p models.Promise) error {
-	// 1. Send Notification Logic
-	// In a real implementation with webpush-go, we would fetch subscriptions for p.UserID and send.
-	// For now, we log it.
-	log.Printf("Use webpush-go to SEND PUSH NOTIFICATION for promise %d to user %d: Remember your promise to %s: %s", 
-        p.ID, p.UserID, p.Recipient, p.Description)
+func sendRecurringReminder(db *sql.DB, p models.Promise) error {
+	payload := PushPayload{
+		Title: fmt.Sprintf("Reminder about your promise to: %s", p.Recipient),
+		Body:  p.Description,
+		Icon:  "/Static/logos/Kept Mascot Colored.svg",
+		Badge: "/Static/logos/Kept Mascot Colored.svg",
+		Tag:   fmt.Sprintf("kept-recurring-%d", p.ID),
+		Data:  map[string]interface{}{"promise_id": p.ID},
+	}
 
-	// 2. Update last_reminded_at
+	if err := SendPushToUser(db, p.UserID, payload); err != nil {
+		return err
+	}
+
+	// Update last_reminded_at
 	_, err := db.Exec("UPDATE promises SET last_reminded_at = CURRENT_TIMESTAMP WHERE id = ?", p.ID)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to update last_reminded_at: %w", err)
+	}
+
+	log.Printf("Sent recurring reminder for promise %d to user %d", p.ID, p.UserID)
+	return nil
 }

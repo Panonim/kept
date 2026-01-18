@@ -109,7 +109,6 @@ export class UIManager {
 
     // Notification bell
     document.getElementById('notification-bell')?.addEventListener('click', () => {
-      console.log('Bell clicked!');
       this.handleNotificationPermission();
     });
 
@@ -200,38 +199,46 @@ export class UIManager {
     }
   }
 
+  showNotification(message, type = 'info', duration = 3000) {
+    const notifEl = document.getElementById('notification-message');
+    if (notifEl) {
+      notifEl.textContent = message;
+      notifEl.className = `notification-message show ${type}`;
+      
+      // Auto-hide after duration
+      setTimeout(() => {
+        notifEl.classList.remove('show');
+      }, duration);
+    }
+  }
+
   async handleNotificationPermission() {
-    console.log('handleNotificationPermission called');
-    console.log('this.notifications:', this.notifications);
-    console.log('Notification.permission:', Notification.permission);
-    
     if (!this.notifications) {
       console.error('Notification service not available');
+      this.showNotification('Notifications Error: Service not available', 'error', 4000);
       return;
     }
 
     try {
       // If permission already granted, send a test push-style notification immediately
       if (Notification.permission === 'granted') {
-        console.log('Permission already granted, sending test notification...');
         await this.notifications.sendTestNotification();
-        console.log('Test notification sent');
+        this.showNotification('✓ Notifications Enabled', 'success', 3000);
         return;
       }
 
-      console.log('Requesting permission...');
       const permission = await this.notifications.requestPermission();
-      console.log('Permission result:', permission);
       
       if (permission === 'granted') {
-        console.log('Notification permission granted');
         // After granting, send a test notification about a promise
         await this.notifications.sendTestNotification();
+        this.showNotification('✓ Notifications Enabled', 'success', 3000);
       } else if (permission === 'denied') {
-        console.log('Notification permission denied');
+        this.showNotification('Notifications Error: Permission Denied', 'error', 4000);
       }
     } catch (error) {
       console.error('Error in handleNotificationPermission:', error);
+      this.showNotification(`Notifications Error: ${error.message}`, 'error', 4000);
     }
   }
 
@@ -642,7 +649,7 @@ export class UIManager {
           <div class="promise-detail-section">
             <h3>History</h3>
             <div class="event-timeline">
-              ${promise.events.map(event => this.renderEvent(event)).join('')}
+              ${promise.events.slice().reverse().map(event => this.renderEvent(event)).join('')}
             </div>
           </div>
         ` : ''}

@@ -30,6 +30,9 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	auth.Post("/refresh", RefreshTokenHandler(db))
 	auth.Post("/logout", LogoutHandler(db))
 
+	// VAPID public key endpoint (public - must be before protected routes for proper routing)
+	api.Get("/push/vapid-public-key", VapidPublicKeyHandler())
+
 	// Protected routes
 	protected := api.Group("/", AuthMiddleware())
 
@@ -55,8 +58,8 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	push := protected.Group("/push")
 	push.Post("/subscribe", SubscribePushHandler(db))
 	push.Delete("/unsubscribe", UnsubscribePushHandler(db))
-	// Test endpoint for sending an example push-style notification payload
-	push.Post("/test", TestPushHandler(db))
+	// Test endpoint for sending an actual push notification
+	push.Post("/test", SendTestPushHandler(db))
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
