@@ -1130,8 +1130,9 @@ export class UIManager {
 
   formatDate(date) {
     const now = new Date();
-    const diffMs = date - now;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thatDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((thatDay - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return 'today';
     if (diffDays === 1) return 'tomorrow';
@@ -1149,13 +1150,18 @@ export class UIManager {
   formatDateTime(date) {
     const now = new Date();
     const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffMins = Math.max(0, Math.floor(diffMs / (1000 * 60)));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    // For days, use calendar day difference to be consistent with formatDate
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thatDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((today - thatDay) / (1000 * 60 * 60 * 24));
 
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffHours < 24 && diffDays === 0) return `${diffHours} hours ago`;
+    if (diffDays === 1) return 'yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
 
     return date.toLocaleDateString('en-US', {

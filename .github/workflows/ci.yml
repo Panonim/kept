@@ -28,6 +28,8 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Test backend
+        env:
+          JWT_SECRET: "at-least-32-characters-long-secret-for-testing"
         run: |
           cd backend
           go test ./...
