@@ -222,15 +222,9 @@ export class NotificationService {
       // Server sends the push notification directly
       const result = await res.json();
 
-      // Also show a local notification to indicate success
-      // (the server-sent notification will arrive asynchronously via Service Worker)
-      const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification('Kept — Test', {
-        body: 'This is a test notification',
-        icon: '/Static/logos/Kept Mascot Colored.svg',
-        badge: '/Static/logos/Kept Mascot Colored.svg',
-        tag: 'kept-test-local',
-      });
+      // Do not show a duplicate local notification here — the server will
+      // send the push notification via the Service Worker. Keeping a local
+      // notification here resulted in duplicate notifications.
     } catch (error) {
       console.error('Failed to send test notification');
       // Show error as local notification

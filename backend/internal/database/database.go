@@ -75,6 +75,7 @@ func createTables(db *sql.DB) error {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		username TEXT UNIQUE NOT NULL,
 		password_hash TEXT NOT NULL,
+		email TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
 

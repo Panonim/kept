@@ -58,8 +58,11 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	push := protected.Group("/push")
 	push.Post("/subscribe", SubscribePushHandler(db))
 	push.Delete("/unsubscribe", UnsubscribePushHandler(db))
-	// Test endpoint for sending an actual push notification
-	push.Post("/test", SendTestPushHandler(db))
+
+	// User profile routes
+	user := protected.Group("/user")
+	user.Get("/profile", GetUserProfileHandler(db))
+	user.Put("/email", UpdateUserEmailHandler(db))
 
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {

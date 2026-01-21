@@ -33,6 +33,8 @@ class App {
         // If successful, show main screen
         this.ui.showMainScreen();
         await this.ui.loadTimeline();
+        // Handle any hash-based navigation from email links
+        this.handleHashNavigation();
       } catch (error) {
         console.log('Session expired or invalid, showing login');
         this.ui.showAuthScreen();
@@ -43,6 +45,13 @@ class App {
       this.ui.showAuthScreen();
       this.ui.showLoginForm();
     }
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', () => {
+      if (this.auth.getUser()) {
+        this.handleHashNavigation();
+      }
+    });
 
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -59,6 +68,25 @@ class App {
       } catch (error) {
         console.error('Service Worker registration failed:', error);
       }
+    }
+  }
+
+  handleHashNavigation() {
+    const hash = window.location.hash;
+    if (!hash || hash === '#' || hash === '#/') return;
+
+    // Parse hash routes
+    if (hash.startsWith('#/promise/')) {
+      const promiseId = parseInt(hash.replace('#/promise/', ''));
+      if (!isNaN(promiseId)) {
+        this.ui.showPromiseDetail(promiseId);
+        // Clear hash to avoid showing promise again on refresh
+        window.location.hash = '';
+      }
+    } else if (hash === '#/settings/notifications') {
+      this.ui.showNotificationSettings();
+      // Clear hash
+      window.location.hash = '';
     }
   }
 

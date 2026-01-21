@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"kept/internal/auth"
 	"kept/internal/models"
-	"time"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -43,7 +43,7 @@ func RegisterHandler(db *sql.DB) fiber.Handler {
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Failed to generate token")
 		}
-        
+
 		days := auth.RefreshDays(req.Remember)
 		refreshToken, err := auth.GenerateRefreshToken(int(userID), req.Username, days)
 		if err != nil {
@@ -54,7 +54,7 @@ func RegisterHandler(db *sql.DB) fiber.Handler {
 			ID:       int(userID),
 			Username: req.Username,
 		}
-		
+
 		// Persist refresh token in DB and set cookie
 		expiresAt := time.Now().Add(time.Duration(days) * 24 * time.Hour)
 		if err := StoreRefreshToken(db, int(userID), refreshToken, expiresAt, days); err != nil {
@@ -87,10 +87,12 @@ func LoginHandler(db *sql.DB) fiber.Handler {
 
 		// Get user
 		var user models.User
+
+		// Try to select with email column first, fall back if it doesn't exist
 		err := db.QueryRow(
-			"SELECT id, username, password_hash FROM users WHERE username = ?",
+			"SELECT id, username, password_hash, COALESCE(email, '') FROM users WHERE username = ?",
 			req.Username,
-		).Scan(&user.ID, &user.Username, &user.PasswordHash)
+		).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Email)
 
 		if err == sql.ErrNoRows {
 			return fiber.NewError(fiber.StatusUnauthorized, "Invalid username or password")
@@ -109,7 +111,7 @@ func LoginHandler(db *sql.DB) fiber.Handler {
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "Failed to generate token")
 		}
-        
+
 		// Determine TTL days based on remember flag
 		days := auth.RefreshDays(req.Remember)
 		refreshToken, err := auth.GenerateRefreshToken(user.ID, user.Username, days)

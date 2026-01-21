@@ -66,7 +66,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
               </svg>
             </button>
-            <a href="https://github.com/Panonim/kept" target="_blank" rel="noopener noreferrer" class="btn-icon" title="View on GitHub" aria-label="View on GitHub">
+            <a href="https://github.com/Panonim/kept" target="_blank" rel="noopener noreferrer" class="btn-icon github-link" title="View on GitHub" aria-label="View on GitHub" style="visibility: hidden; pointer-events: none; position: absolute;">
               <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="size-6">
                 <title>GitHub</title>
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -218,6 +218,44 @@
           <div class="form-actions">
             <button type="button" class="btn-secondary modal-close">Cancel</button>
             <button type="submit" class="btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div id="notification-settings-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Notification Settings</h2>
+          <button class="modal-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form id="notification-settings-form">
+          <div class="form-group">
+            <label>Push Notifications</label>
+            <p class="form-hint">Get notified when promises are due</p>
+            <div class="notification-status">
+              <button type="button" id="enable-push-btn" class="btn-secondary btn-small">Enable Notifications</button>
+            </div>
+          </div>
+          
+          <div class="divider"></div>
+          
+          <div class="form-group">
+            <label for="user-email">Email Address (Optional)</label>
+            <p class="form-hint">Receive email reminders in addition to push notifications</p>
+            <input type="email" id="user-email" placeholder="your@email.com">
+            <p class="form-hint-small">Your email is never shared and is only used for reminders</p>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" class="btn-secondary modal-close">Cancel</button>
+            <button type="submit" class="btn-primary">Save Settings</button>
           </div>
         </form>
       </div>

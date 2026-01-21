@@ -109,7 +109,18 @@ export class UIManager {
 
     // Notification bell
     document.getElementById('notification-bell')?.addEventListener('click', () => {
-      this.handleNotificationPermission();
+      this.showNotificationSettings();
+    });
+
+    // Notification settings form
+    document.getElementById('notification-settings-form')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleSaveNotificationSettings();
+    });
+
+    // Enable push notifications button
+    document.getElementById('enable-push-btn')?.addEventListener('click', async () => {
+      await this.handleEnablePushNotifications();
     });
 
     // Filter tabs
@@ -213,32 +224,96 @@ export class UIManager {
   }
 
   async handleNotificationPermission() {
+    // This method is deprecated - now using showNotificationSettings
+    this.showNotificationSettings();
+  }
+
+  showNotificationSettings() {
+    const modal = document.getElementById('notification-settings-modal');
+    const enablePushBtn = document.getElementById('enable-push-btn');
+    const emailInput = document.getElementById('user-email');
+
+    // Update push notification status
+    if (Notification.permission === 'granted') {
+      enablePushBtn.textContent = '✓ Enabled';
+      enablePushBtn.classList.add('enabled');
+      enablePushBtn.disabled = true;
+    } else {
+      enablePushBtn.textContent = 'Enable Notifications';
+      enablePushBtn.classList.remove('enabled');
+      enablePushBtn.disabled = false;
+    }
+
+    // Load user's current email
+    const user = this.auth.getUser();
+    if (user && user.email) {
+      emailInput.value = user.email;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  async handleEnablePushNotifications() {
     if (!this.notifications) {
-      console.error('Notification service not available');
       this.showNotification('Notifications Error: Service not available', 'error', 4000);
       return;
     }
 
     try {
-      // If permission already granted, send a test push-style notification immediately
-      if (Notification.permission === 'granted') {
-        await this.notifications.sendTestNotification();
-        this.showNotification('✓ Notifications Enabled', 'success', 3000);
-        return;
-      }
-
       const permission = await this.notifications.requestPermission();
       
       if (permission === 'granted') {
-        // After granting, send a test notification about a promise
         await this.notifications.sendTestNotification();
-        this.showNotification('✓ Notifications Enabled', 'success', 3000);
+        this.showNotification('✓ Push Notifications Enabled', 'success', 3000);
+        
+        // Update UI
+        const enablePushBtn = document.getElementById('enable-push-btn');
+        enablePushBtn.textContent = '✓ Enabled';
+        enablePushBtn.classList.add('enabled');
+        enablePushBtn.disabled = true;
+        enablePushBtn.disabled = true;
       } else if (permission === 'denied') {
         this.showNotification('Notifications Error: Permission Denied', 'error', 4000);
       }
     } catch (error) {
-      console.error('Error in handleNotificationPermission:', error);
+      console.error('Error enabling push notifications:', error);
       this.showNotification(`Notifications Error: ${error.message}`, 'error', 4000);
+    }
+  }
+
+  async handleSaveNotificationSettings() {
+    const emailInput = document.getElementById('user-email');
+    const email = emailInput.value.trim();
+
+    try {
+      // Update email via API
+      const response = await fetch('/api/user/email', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.auth.getToken()}`
+        },
+        body: JSON.stringify({ email: email || null })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update email');
+      }
+
+      const data = await response.json();
+      
+      // Update local user data
+      const user = this.auth.getUser();
+      if (user) {
+        user.email = email;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
+      this.showNotification('✓ Settings saved successfully', 'success', 3000);
+      this.closeModals();
+    } catch (error) {
+      console.error('Error saving notification settings:', error);
+      this.showNotification(`Error: ${error.message}`, 'error', 4000);
     }
   }
 

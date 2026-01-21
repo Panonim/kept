@@ -67,11 +67,26 @@ self.addEventListener('push', (event) => {
       requireInteraction: false,
       data: data.data || {},
     };
-    event.waitUntil(
-      self.registration.showNotification(title, options)
-        .then(() => console.log('Notification shown'))
-        .catch(err => console.error('Failed to show notification'))
-    );
+
+    // Deduplicate notifications by tag: close any existing notifications with
+    // the same tag before showing the new one. This prevents duplicates when
+    // multiple sources attempt to display the same reminder.
+    const show = async () => {
+      try {
+        const existing = await self.registration.getNotifications({ tag: options.tag });
+        if (existing && existing.length) {
+          existing.forEach(n => {
+            try { n.close(); } catch (e) { /* ignore */ }
+          });
+        }
+        await self.registration.showNotification(title, options);
+        console.log('Notification shown (deduplicated)');
+      } catch (err) {
+        console.error('Failed to show notification', err);
+      }
+    };
+
+    event.waitUntil(show());
   } catch (error) {
     console.error('Error in push event handler');
   }

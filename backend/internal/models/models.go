@@ -5,22 +5,23 @@ import "time"
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username"`
+	Email        string    `json:"email,omitempty"`
 	PasswordHash string    `json:"-"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
 type Promise struct {
-	ID           int        `json:"id"`
-	UserID       int        `json:"user_id"`
-	Recipient    string     `json:"recipient"`
-	Description  string     `json:"description"`
-	DueDate      *time.Time `json:"due_date,omitempty"`
-	CurrentState string     `json:"current_state"`
+	ID                int        `json:"id"`
+	UserID            int        `json:"user_id"`
+	Recipient         string     `json:"recipient"`
+	Description       string     `json:"description"`
+	DueDate           *time.Time `json:"due_date,omitempty"`
+	CurrentState      string     `json:"current_state"`
 	ReminderFrequency string     `json:"reminder_frequency,omitempty"`
 	LastRemindedAt    *time.Time `json:"last_reminded_at,omitempty"`
 	CreatedAt         time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
-	Events       []Event    `json:"events,omitempty"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+	Events            []Event    `json:"events,omitempty"`
 }
 
 type Event struct {
@@ -50,21 +51,21 @@ type PushSubscription struct {
 }
 
 type CreatePromiseRequest struct {
-	Recipient    string     `json:"recipient"`
-	Description  string     `json:"description"`
-	DueDate      *time.Time `json:"due_date,omitempty"`
-	ReminderFrequency string `json:"reminder_frequency,omitempty"`
+	Recipient         string     `json:"recipient"`
+	Description       string     `json:"description"`
+	DueDate           *time.Time `json:"due_date,omitempty"`
+	ReminderFrequency string     `json:"reminder_frequency,omitempty"`
 }
 
 type UpdatePromiseStateRequest struct {
-	State          string `json:"state"`
-	ReflectionNote string `json:"reflection_note,omitempty"`
+	State          string     `json:"state"`
+	ReflectionNote string     `json:"reflection_note,omitempty"`
 	NewDueDate     *time.Time `json:"new_due_date,omitempty"`
 }
 
 type UpdatePromiseRequest struct {
-	ReminderFrequency *int `json:"reminder_frequency,omitempty"`
-	DueDate      *time.Time `json:"due_date,omitempty"`
+	ReminderFrequency *int       `json:"reminder_frequency,omitempty"`
+	DueDate           *time.Time `json:"due_date,omitempty"`
 }
 
 type CreateReminderRequest struct {
