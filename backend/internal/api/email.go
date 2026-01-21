@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	gomail "gopkg.in/gomail.v2"
+	"gopkg.in/gomail.v2"
 )
 
 type EmailReminderData struct {
@@ -183,22 +183,19 @@ func SendReminderEmail(db *sql.DB, promise models.Promise, userEmail string) err
 func sendSMTPEmail(config *SMTPConfig, to, subject, htmlBody string) error {
 	log.Printf("[EMAIL] Sending email to %s, subject: %s, HTML body length: %d", to, subject, len(htmlBody))
 
-	// Create a new message
 	m := gomail.NewMessage()
 	m.SetHeader("From", config.From)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
+
+	// Plain text fallback
 	m.SetBody("text/plain", "Please view this email in an HTML-capable email client.")
+
+	// HTML version (this is the important part for HTML rendering)
 	m.AddAlternative("text/html", htmlBody)
 
-	// Create dialer
+	// Create dialer with SMTP config
 	d := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
-
-	// Configure TLS
-	if !config.UseTLS {
-		d.TLSConfig = nil
-		d.SSL = false
-	}
 
 	// Send the email
 	if err := d.DialAndSend(m); err != nil {
