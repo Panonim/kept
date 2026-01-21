@@ -2,18 +2,18 @@ package api
 
 import (
 	"bytes"
-	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"html/template"
 	"kept/internal/models"
 	"log"
-	"net/smtp"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	gomail "gopkg.in/gomail.v2"
 )
 
 type EmailReminderData struct {
@@ -179,110 +179,34 @@ func SendReminderEmail(db *sql.DB, promise models.Promise, userEmail string) err
 	return sendSMTPEmail(config, userEmail, "Promise Reminder from Kept", htmlContent)
 }
 
-// sendSMTPEmail sends an email via SMTP
+// sendSMTPEmail sends an email via SMTP using gomail
 func sendSMTPEmail(config *SMTPConfig, to, subject, htmlBody string) error {
 	log.Printf("[EMAIL] Sending email to %s, subject: %s, HTML body length: %d", to, subject, len(htmlBody))
-	
-	// Build email message with proper MIME multipart format
-	boundary := "----=_Part_0_1234567890.1234567890"
-	
-	message := fmt.Sprintf("From: %s\r\n", config.From)
-	message += fmt.Sprintf("To: %s\r\n", to)
-	message += fmt.Sprintf("Subject: %s\r\n", subject)
-	message += "MIME-Version: 1.0\r\n"
-	message += fmt.Sprintf("Content-Type: multipart/alternative; boundary=\"%s\"\r\n", boundary)
-	message += "\r\n"
-	
-	// Plain text version
-	message += fmt.Sprintf("--%s\r\n", boundary)
-	message += "Content-Type: text/plain; charset=UTF-8\r\n"
-	message += "Content-Transfer-Encoding: 7bit\r\n"
-	message += "\r\n"
-	message += "Please view this email in an HTML-capable email client.\r\n"
-	message += "\r\n"
-	
-	// HTML version
-	message += fmt.Sprintf("--%s\r\n", boundary)
-	message += "Content-Type: text/html; charset=UTF-8\r\n"
-	message += "Content-Transfer-Encoding: 7bit\r\n"
-	message += "\r\n"
-	message += htmlBody
-	message += "\r\n"
-	message += fmt.Sprintf("--%s--\r\n", boundary)
 
-	log.Printf("[EMAIL] Full message length: %d bytes, first 500 chars: %.500s", len(message), message)
+	// Create a new message
+	m := gomail.NewMessage()
+	m.SetHeader("From", config.From)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", "Please view this email in an HTML-capable email client.")
+	m.AddAlternative("text/html", htmlBody)
 
-	// Connect to SMTP server
-	addr := fmt.Sprintf("%s:%d", config.Host, config.Port)
+	// Create dialer
+	d := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
 
-	var auth smtp.Auth
-	if config.Username != "" && config.Password != "" {
-		auth = smtp.PlainAuth("", config.Username, config.Password, config.Host)
+	// Configure TLS
+	if !config.UseTLS {
+		d.TLSConfig = nil
+		d.SSL = false
 	}
 
-	// Use TLS if configured
-	if config.UseTLS {
-		return sendMailTLS(addr, auth, config.From, []string{to}, []byte(message), config.Host)
+	// Send the email
+	if err := d.DialAndSend(m); err != nil {
+		log.Printf("[EMAIL] Failed to send email: %v", err)
+		return fmt.Errorf("failed to send email: %w", err)
 	}
 
-	// Standard SMTP without TLS
-	return smtp.SendMail(addr, auth, config.From, []string{to}, []byte(message))
-}
-
-// sendMailTLS sends email with TLS encryption
-func sendMailTLS(addr string, auth smtp.Auth, from string, to []string, msg []byte, host string) error {
-	// Connect to server
-	client, err := smtp.Dial(addr)
-	if err != nil {
-		return fmt.Errorf("failed to connect to SMTP server: %w", err)
-	}
-	defer client.Close()
-
-	// Start TLS
-	tlsConfig := &tls.Config{
-		ServerName: host,
-	}
-	if err = client.StartTLS(tlsConfig); err != nil {
-		return fmt.Errorf("failed to start TLS: %w", err)
-	}
-
-	// Authenticate
-	if auth != nil {
-		if err = client.Auth(auth); err != nil {
-			return fmt.Errorf("authentication failed: %w", err)
-		}
-	}
-
-	// Set sender
-	if err = client.Mail(from); err != nil {
-		return fmt.Errorf("failed to set sender: %w", err)
-	}
-
-	// Set recipient
-	for _, recipient := range to {
-		if err = client.Rcpt(recipient); err != nil {
-			return fmt.Errorf("failed to set recipient: %w", err)
-		}
-	}
-
-	// Send message
-	w, err := client.Data()
-	if err != nil {
-		return fmt.Errorf("failed to get data writer: %w", err)
-	}
-	defer w.Close()
-
-	if _, err = w.Write(msg); err != nil {
-		return fmt.Errorf("failed to write message: %w", err)
-	}
-
-	// Future: Add support for other email providers:
-	// - SendGrid API
-	// - AWS SES
-	// - Mailgun
-	// - Postmark
-	// etc.
-
+	log.Printf("[EMAIL] Email sent successfully to %s", to)
 	return nil
 }
 
