@@ -76,7 +76,7 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 		testPromise := models.Promise{
 			ID:          0, // Test promise
 			Recipient:   "yourself",
-			Description: "This is a test reminder to verify your email notifications are working correctly. If you received this, your Kept email system is configured properly!",
+			Description: "Test email reminder",
 			DueDate:     &tomorrow,
 			CurrentState: "active",
 		}
