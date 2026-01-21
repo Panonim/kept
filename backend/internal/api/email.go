@@ -31,20 +31,16 @@ type EmailReminderData struct {
 // LoadEmailTemplate loads and parses the email template
 func LoadEmailTemplate() (*template.Template, error) {
 	templatePath := filepath.Join(".", "reminder-email-template.html")
-	log.Printf("[EMAIL] Loading template from: %s", templatePath)
-	
+
 	// Check if file exists
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
-		log.Printf("[EMAIL] Template file not found at %s", templatePath)
 		return nil, fmt.Errorf("template file not found at %s", templatePath)
 	}
-	
+
 	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
-		log.Printf("[EMAIL] Failed to parse template: %v", err)
 		return nil, fmt.Errorf("failed to parse email template: %w", err)
 	}
-	log.Printf("[EMAIL] Template loaded successfully")
 	return tmpl, nil
 }
 
@@ -75,13 +71,10 @@ func GenerateReminderEmail(promise models.Promise, appURL string) (string, error
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
-		log.Printf("[EMAIL] Failed to execute template: %v", err)
 		return "", fmt.Errorf("failed to execute email template: %w", err)
 	}
 
-	htmlContent := buf.String()
-	log.Printf("[EMAIL] Generated HTML content, length: %d bytes, first 200 chars: %.200s", len(htmlContent), htmlContent)
-	return htmlContent, nil
+	return buf.String(), nil
 }
 
 // formatEmailDate formats a time.Time for email display
@@ -181,8 +174,6 @@ func SendReminderEmail(db *sql.DB, promise models.Promise, userEmail string) err
 
 // sendSMTPEmail sends an email via SMTP using gomail
 func sendSMTPEmail(config *SMTPConfig, to, subject, htmlBody string) error {
-	log.Printf("[EMAIL] Sending email to %s, subject: %s, HTML body length: %d", to, subject, len(htmlBody))
-
 	m := gomail.NewMessage()
 	m.SetHeader("From", config.From)
 	m.SetHeader("To", to)
@@ -199,11 +190,9 @@ func sendSMTPEmail(config *SMTPConfig, to, subject, htmlBody string) error {
 
 	// Send the email
 	if err := d.DialAndSend(m); err != nil {
-		log.Printf("[EMAIL] Failed to send email: %v", err)
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
-	log.Printf("[EMAIL] Email sent successfully to %s", to)
 	return nil
 }
 

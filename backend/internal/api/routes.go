@@ -58,11 +58,6 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	push := protected.Group("/push")
 	push.Post("/subscribe", SubscribePushHandler(db))
 	push.Delete("/unsubscribe", UnsubscribePushHandler(db))
-	// Test endpoint for sending an actual push notification
-	push.Post("/test", SendTestPushHandler(db))
-
-	// Email test route (rate limited: once per 10 minutes)
-	protected.Post("/email/test", TestEmailHandler(db))
 
 	// User profile routes
 	user := protected.Group("/user")

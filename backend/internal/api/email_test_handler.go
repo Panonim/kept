@@ -29,9 +29,9 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 			emailTestMutex.Unlock()
 			remaining := 10*time.Minute - timeSinceLastTest
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Email test rate limited",
+				"error":               "Email test rate limited",
 				"retry_after_seconds": int(remaining.Seconds()),
-				"message": fmt.Sprintf("Please wait %s before testing again", formatDuration(remaining)),
+				"message":             fmt.Sprintf("Please wait %s before testing again", formatDuration(remaining)),
 			})
 		}
 		lastEmailTestTime = time.Now()
@@ -41,7 +41,7 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 		config, err := GetSMTPConfig()
 		if err != nil {
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
-				"error": "SMTP not configured",
+				"error":   "SMTP not configured",
 				"message": "Please configure SMTP environment variables (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM)",
 				"details": err.Error(),
 			})
@@ -57,7 +57,7 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 
 		if !userEmail.Valid || userEmail.String == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "No email address",
+				"error":   "No email address",
 				"message": "Your account does not have an email address set. Please update your profile.",
 			})
 		}
@@ -65,7 +65,7 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 		// Validate email format
 		if !isValidEmail(userEmail.String) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Invalid email address",
+				"error":   "Invalid email address",
 				"message": "The email address on your account is not valid. Please update your profile with a valid email address.",
 			})
 		}
@@ -74,10 +74,10 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 		now := time.Now()
 		tomorrow := now.Add(24 * time.Hour)
 		testPromise := models.Promise{
-			ID:          0, // Test promise
-			Recipient:   "yourself",
-			Description: "Test email reminder",
-			DueDate:     &tomorrow,
+			ID:           0, // Test promise
+			Recipient:    "yourself",
+			Description:  "Test email reminder",
+			DueDate:      &tomorrow,
 			CurrentState: "active",
 		}
 
@@ -85,7 +85,7 @@ func TestEmailHandler(db *sql.DB) fiber.Handler {
 		err = SendReminderEmail(db, testPromise, userEmail.String)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to send test email",
+				"error":   "Failed to send test email",
 				"message": err.Error(),
 			})
 		}
@@ -119,9 +119,9 @@ func formatDuration(d time.Duration) string {
 
 // isValidEmail checks if an email address is valid (simple regex)
 func isValidEmail(email string) bool {
-    // Basic RFC 5322 regex for demonstration (not exhaustive)
-    // Accepts most common valid emails, rejects obvious invalid ones
-    re := `^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`
-    matched, _ := regexp.MatchString(re, email)
-    return matched
+	// Basic RFC 5322 regex for demonstration (not exhaustive)
+	// Accepts most common valid emails, rejects obvious invalid ones
+	re := `^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$`
+	matched, _ := regexp.MatchString(re, email)
+	return matched
 }
