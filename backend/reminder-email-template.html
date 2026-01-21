@@ -9,7 +9,7 @@
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8f9fa;">
         <tr>
             <td style="padding: 20px 0;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; background-color: #f5f7f5; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(66, 97, 66, 0.08);">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #f5f7f5; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(66, 97, 66, 0.08);">
                     <!-- Header -->
                     <tr>
                         <td style="background: linear-gradient(135deg, #426142 0%, #5a8a5a 100%); padding: 40px 30px; text-align: center;">
@@ -17,10 +17,7 @@
                                 <tr>
                                     <td style="text-align: center;">
                                         <div style="width: 48px; height: 48px; margin: 0 auto 16px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
-                                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                                            </svg>
+                                            <img src="{{.AppURL}}/Static/bell_icon.svg" alt="notification" width="24" height="24" style="display:block; border:0; outline:none; text-decoration:none;" />
                                         </div>
                                         <h1 style="color: #ffffff; font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -0.5px;">Promise Reminder</h1>
                                         <p style="color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 8px 0 0 0;">A gentle nudge about something you care about</p>
@@ -37,7 +34,7 @@
                             <p style="color: #555; font-size: 14px; line-height: 1.8; margin: 0 0 16px 0;">A promise you made needs a gentle nudge. Check in on it whenever you're ready — no pressure, just a friendly reminder that something you care about is waiting.</p>
                             
                             <!-- Reminder Card -->
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #e8f0e8; border-left: 4px solid #7ba97b; border-radius: 12px; margin: 32px 0;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #e8f0e8; border-left: 4px solid #7ba97b; border-radius: 12px; margin: 32px 0; width:100%; box-sizing:border-box;">
                                 <tr>
                                     <td style="padding: 24px;">
                                         <h2 style="color: #426142; font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">{{.Title}}</h2>
@@ -46,12 +43,12 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e0e0e0;">
                                             <tr>
                                                 {{if .DueDateRaw}}
-                                                <td style="font-size: 12px; color: #999; padding-right: 20px;">
+                                                <td style="font-size: 12px; color: #999; padding-right: 20px; width:50%; display:inline-block; vertical-align:top; box-sizing:border-box;">
                                                     <strong style="display: block; color: #426142; font-weight: 600; margin-bottom: 4px;">Due Date</strong>
                                                     {{.DueDate}}
                                                 </td>
                                                 {{end}}
-                                                <td style="font-size: 12px; color: #999;">
+                                                <td style="font-size: 12px; color: #999; width:50%; display:inline-block; vertical-align:top; box-sizing:border-box;">
                                                     <strong style="display: block; color: #426142; font-weight: 600; margin-bottom: 4px;">Promise to</strong>
                                                     {{.PromiseTo}}
                                                 </td>
@@ -76,7 +73,7 @@
                     <tr>
                         <td style="background-color: #e8f0e8; padding: 30px; text-align: center; border-top: 1px solid #d0dfd0;">
                             <div style="margin: 0 auto 16px;">
-                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNzQiIHZpZXdCb3g9IjAgMCA4NzAgMTA3MyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAKPHBHDGGGZD0iTTI1NC45NjggMzEyLjUwNkMyNjMuNTAzIDMxOS41NzQgMjY5LjY1IDMyOC4yMDcgMjcwLjkzNCAzMzkuNDc4QzI3MS40MjkgMzU0LjYwOCAyNjguNjE3IDM2OC42MyAyNTguODM0IDM4MC40ODJDMjUxLjA5NCAzODguNDIgMjQzLjg3OCAzOTIuMjI5IDIzMi44OTQgMzkzLjM2NUMyMjMuMzI2IDM5My4yMjIgMjE0LjU3MiAzODguNzU2IDIwNy40MTMgMzgyLjU1MkMxOTguNzI1IDM3Mi44MTYgMTk1LjQxNCAzNjEuMDEzIDE5NS43MDUgMzQ4LjIyMkMxOTcuNjIxIDMzNC45NjIgMjAxLjI0NyAzMjIuMjc4IDIxMS45MDcgMzEzLjU2M0MyMjYuMDI2IDMwMy43NTUgMjQwLjMzOCAzMDIuMjEyIDI1NC45NjggMzEyLjUwNloiIGZpbGw9IiM0MjYxNDIiLz4KICAKPC9zdmc+" alt="Kept Logo" style="width: 60px; height: auto; display: block;" />
+                                <img src="{{.AppURL}}/Static/logos/Kept%20Mascot%20Circle.svg" alt="Kept Logo" style="width:60px; height:auto; display:block; border:0; outline:none; text-decoration:none;" />
                             </div>
                             <p style="color: #999; font-size: 12px; line-height: 1.6; margin: 0 0 8px 0;">{{.Year}} Kept. Made with care.</p>
                             <p style="color: #999; font-size: 12px; line-height: 1.6; margin: 0;">
