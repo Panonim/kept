@@ -9,6 +9,30 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Function to mask sensitive data
+mask_token() {
+    local token="$1"
+    if [ -z "$token" ]; then
+        echo "[MASKED]"
+    else
+        local first_8="${token:0:8}"
+        echo "${first_8}...[MASKED]"
+    fi
+}
+
+mask_email() {
+    local email="$1"
+    if [[ "$email" =~ ^(.+)@(.+)\.(.+)$ ]]; then
+        local user="${BASH_REMATCH[1]}"
+        local domain="${BASH_REMATCH[2]}"
+        local tld="${BASH_REMATCH[3]}"
+        # Show first char of user, then *, then domain
+        echo "${user:0:1}***@${domain}.${tld}"
+    else
+        echo "[MASKED_EMAIL]"
+    fi
+}
+
 echo -e "${YELLOW}=== Kept Email Test ===${NC}\n"
 
 # Check if API is running
@@ -32,6 +56,8 @@ fi
 
 # Send test email
 echo "Sending test email..."
+masked_token=$(mask_token "$JWT_TOKEN")
+echo "Using token: $masked_token"
 response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/email/test \
     -H "Authorization: Bearer $JWT_TOKEN" \
     -H "Content-Type: application/json")
@@ -40,9 +66,12 @@ response=$(curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/email/t
 status_code=$(echo "$response" | tail -n1)
 body=$(echo "$response" | sed '$d')
 
+# Mask sensitive data in response
 if [ "$status_code" -eq 200 ]; then
     echo -e "${GREEN}✓ Test email sent successfully!${NC}\n"
-    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+    # Extract and mask the email from response
+    masked_body=$(echo "$body" | jq -r '.message // .email // .' 2>/dev/null | sed 's/[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]*\.[a-zA-Z]*/[MASKED_EMAIL]/g')
+    echo "$masked_body"
 elif [ "$status_code" -eq 429 ]; then
     echo -e "${YELLOW}⚠ Rate limit reached${NC}"
     echo "$body" | jq '.' 2>/dev/null || echo "$body"
@@ -54,5 +83,7 @@ elif [ "$status_code" -eq 503 ]; then
     echo "SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM"
 else
     echo -e "${RED}✗ Failed to send test email (HTTP $status_code)${NC}"
-    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+    # Mask email in error response too
+    masked_error=$(echo "$body" | sed 's/[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]*\.[a-zA-Z]*/[MASKED_EMAIL]/g')
+    echo "$masked_error" | jq '.' 2>/dev/null || echo "$masked_error"
 fi
