@@ -65,6 +65,9 @@ RUN ldconfig || true
 # Copy the binary from builder
 COPY --from=builder /app/main .
 
+# Copy email template so runtime can load it
+COPY --from=builder /app/reminder-email-template.html /root/reminder-email-template.html
+
 # Create data directory
 RUN mkdir -p /root/data
 

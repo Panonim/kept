@@ -23,14 +23,22 @@ func main() {
 	defer db.Close()
 
 	// Run migrations only if explicitly enabled (opt-in for safety)
-	runMigrations := os.Getenv("RUN_MIGRATIONS") == "true"
-	if runMigrations {
+	// Default to true if not set, to ensure schema is up to date
+	runMigrations := os.Getenv("RUN_MIGRATIONS")
+	if runMigrations == "" {
+		runMigrations = "true"
+	}
+
+	if runMigrations == "true" {
 		log.Println("Running database migrations...")
 		if err := api.MigratePostponedToKept(db); err != nil {
 			log.Printf("Migration error: %v", err)
 		}
 		if err := api.MigrateAddReminderFrequency(db); err != nil {
 			log.Printf("Migration error (reminder freq): %v", err)
+		}
+		if err := api.MigrateAddUserEmail(db); err != nil {
+			log.Printf("Migration error (user email): %v", err)
 		}
 	} else {
 		log.Println("Migrations skipped (set RUN_MIGRATIONS=true to enable)")

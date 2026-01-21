@@ -21,6 +21,8 @@ services:
       - ALLOWED_ORIGINS=https://yourdomain.com
       - DISABLE_REGISTRATION=false
       - RUN_MIGRATIONS=false
+      # App URL for email links
+      - APP_URL=https://yourdomain.com
     volumes:
       - data:/data
     ports:
@@ -40,6 +42,52 @@ volumes:
 
 - **Note:** Set all secrets (e.g., `JWT_SECRET`, `DB_ENCRYPTION_KEY`) securely, preferably using environment variables or Docker secrets.
 - The SQLite database is stored in the `kept-data` volume. The database file is encrypted if `DB_ENCRYPTION_KEY` is set.
+- **SMTP Configuration:** Email reminders are optional. If SMTP variables are not set, only push notifications will be sent.
+
+---
+
+## Email Reminder Setup (Optional)
+
+Kept can send email reminders in addition to push notifications. Configure these environment variables:
+
+```bash
+SMTP_HOST=smtp.gmail.com        # Your SMTP server
+SMTP_PORT=587                   # Usually 587 for TLS, 465 for SSL
+SMTP_USER=your-email@gmail.com  # SMTP username
+SMTP_PASS=your-app-password     # SMTP password or app password
+SMTP_FROM=noreply@yourdomain.com # From address
+SMTP_USE_TLS=true              # Use TLS (recommended)
+APP_URL=https://yourdomain.com  # Your app URL for email links
+```
+
+### Common SMTP Providers:
+
+**Gmail:**
+- Host: `smtp.gmail.com`, Port: `587`
+- Enable 2FA and create an [App Password](https://support.google.com/accounts/answer/185833)
+
+**Outlook/Office365:**
+- Host: `smtp-mail.outlook.com`, Port: `587`
+- Use your account credentials
+
+**SendGrid:**
+- Host: `smtp.sendgrid.net`, Port: `587`
+- Username: `apikey`, Password: Your API key
+
+**Mailgun:**
+- Host: `smtp.mailgun.org`, Port: `587`
+- Use your Mailgun credentials
+
+### Testing Email Configuration:
+
+Once configured, test email sending via:
+```bash
+# Login to your Kept instance
+curl -X POST http://localhost:3000/api/email/test \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+Rate limit: Once per 10 minutes per server.
 
 ---
 
@@ -121,6 +169,12 @@ Environment=JWT_SECRET=your_jwt_secret
 Environment=DB_ENCRYPTION_KEY=your_db_encryption_key
 Environment=JWT_REFRESH_SECRET=your_refresh_secret
 Environment=ALLOWED_ORIGINS=https://yourdomain.com
+Environment=SMTP_HOST=smtp.gmail.com
+Environment=SMTP_PORT=587
+Environment=SMTP_USER=your-email@gmail.com
+Environment=SMTP_PASS=your-app-password
+Environment=SMTP_FROM=noreply@yourdomain.com
+Environment=APP_URL=https://yourdomain.com
 Restart=on-failure
 
 [Install]

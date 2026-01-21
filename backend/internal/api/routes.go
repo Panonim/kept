@@ -61,6 +61,14 @@ func SetupRoutes(app *fiber.App, db *sql.DB) {
 	// Test endpoint for sending an actual push notification
 	push.Post("/test", SendTestPushHandler(db))
 
+	// Email test route (rate limited: once per 10 minutes)
+	protected.Post("/email/test", TestEmailHandler(db))
+
+	// User profile routes
+	user := protected.Group("/user")
+	user.Get("/profile", GetUserProfileHandler(db))
+	user.Put("/email", UpdateUserEmailHandler(db))
+
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})

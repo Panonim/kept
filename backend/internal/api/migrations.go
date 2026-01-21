@@ -75,3 +75,17 @@ func MigratePostponedToKept(db *sql.DB) error {
 
 	return tx.Commit()
 }
+
+// MigrateAddUserEmail adds email column to users table if it doesn't exist
+func MigrateAddUserEmail(db *sql.DB) error {
+exists, err := columnExists(db, "users", "email")
+if err != nil {
+return err
+}
+if !exists {
+if _, err := db.Exec("ALTER TABLE users ADD COLUMN email TEXT"); err != nil {
+return err
+}
+}
+return nil
+}
