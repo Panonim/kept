@@ -24,6 +24,8 @@ I wrote this app for my girlfriend because she was always forgetting her promise
 ## Get started
 - If you want to try it quickly, see `DEPLOY.md` for Docker-based deployment instructions.
 
+[![Docker Build and Push](https://github.com/Panonim/kept/actions/workflows/deploy.yml/badge.svg)](https://github.com/Panonim/kept/actions/workflows/deploy.yml)
+
 ## Contributing & support
 - Bug reports and feature requests: open an issue.
 - Happy to accept PRs — small, focused changes are easiest to review.

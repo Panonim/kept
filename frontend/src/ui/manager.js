@@ -234,7 +234,7 @@ export class UIManager {
     const emailInput = document.getElementById('user-email');
 
     // Update push notification status
-    if (Notification.permission === 'granted') {
+    if ('Notification' in window && Notification.permission === 'granted') {
       enablePushBtn.textContent = '✓ Enabled';
       enablePushBtn.classList.add('enabled');
       enablePushBtn.disabled = true;
