@@ -1293,7 +1293,7 @@ textarea {
   .modal {
     padding: 0; /* remove gap so sheet can reach device bottom */
     align-items: flex-end;
-    justify-content: flex-end;
+    justify-content: center;
   }
 
   .modal-content {
